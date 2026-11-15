@@ -232,6 +232,9 @@ body.driving .panel,body.driving .fab{display:none}
       <button class="chip" id="optToll" aria-pressed="false">Unngå bomvei</button>
       <button class="chip" id="optCalm" aria-pressed="false">Roligere veier</button>
     </div>
+    <h3>Kjøretid</h3>
+    <p class="muted">Mopedbiler bruker lengre tid enn fartsgrensen tilsier. Juster hvis tidene ikke stemmer for deg.</p>
+    <div class="chips" id="timeOpts" role="group" aria-label="Kjøretid"></div>
     <h3>Favoritter</h3>
     <div class="favlist" id="favList"></div>
     <h3>Om dataene</h3>
@@ -286,6 +289,26 @@ for (const k in optBtns){
     if (routeOpen) route(!!state.from);
   };
 }
+
+// Tidsjustering: Valhallas tid er for optimistisk for mopedbil (treg akselerasjon, bakker, rundkjøringer, kryss)
+const DEFAULT_TIME_FACTOR = 1.45;
+const TIME_CHOICES = [["Som beregnet", 1], ["Litt mer", 1.25], ["Realistisk", 1.45], ["Mye mer", 1.65]];
+let timeFactor = store.get("timeFactor", DEFAULT_TIME_FACTOR);
+if (!TIME_CHOICES.some(c => c[1] === timeFactor)) timeFactor = DEFAULT_TIME_FACTOR;
+const mopedSeconds = raw => raw * timeFactor;
+function renderTimeOpts(){
+  const box = $("timeOpts"); box.innerHTML = "";
+  TIME_CHOICES.forEach(([label, f]) => {
+    const b = document.createElement("button"); b.className = "chip"; b.textContent = label;
+    b.setAttribute("aria-pressed", f === timeFactor);
+    b.onclick = () => {
+      timeFactor = f; store.set("timeFactor", f); renderTimeOpts();
+      if (state.routes.length && routeOpen) renderRoute();
+    };
+    box.appendChild(b);
+  });
+}
+renderTimeOpts();
 
 // Innstillinger (sheet)
 let settingsReturnFocus = null;
@@ -618,7 +641,7 @@ async function fetchCarTime(locations, ctrl){
 function renderCarLine(){
   const el = $("carLine"), t = state.routes[state.active];
   if (state.carTime == null || !t){ el.hidden = true; return; }
-  el.textContent = `Bil: ${fmtMin(state.carTime)} · Deg: ${fmtMin(t.summary.time)}`;
+  el.textContent = `Bil: ${fmtMin(state.carTime)} · Deg: ${fmtMin(mopedSeconds(t.summary.time))}`;
   el.hidden = false;
 }
 
@@ -662,9 +685,9 @@ function openRouteView(){
 function renderRoute(){
   const t = state.routes[state.active];
   const s = t.summary;
-  $("rTime").textContent = fmtMin(s.time);
+  $("rTime").textContent = fmtMin(mopedSeconds(s.time));
   $("rDist").textContent = fmtKm(s.length);
-  $("rEta").textContent = fmtClock(new Date(Date.now() + s.time*1000));
+  $("rEta").textContent = fmtClock(new Date(Date.now() + mopedSeconds(s.time)*1000));
 
   // Alternativer: første = Raskest, resten viser ekstra minutter
   const alts = $("alts"); alts.innerHTML = "";
@@ -672,7 +695,7 @@ function renderRoute(){
     state.routes.forEach((r, i) => {
       const b = document.createElement("button"); b.className = "chip";
       b.setAttribute("aria-pressed", i === state.active);
-      const extra = Math.max(1, Math.round((r.summary.time - state.routes[0].summary.time) / 60));
+      const extra = Math.max(1, Math.round(mopedSeconds(r.summary.time - state.routes[0].summary.time) / 60));
       b.textContent = i === 0 ? "Raskest" : "Alternativ · +" + extra + " min";
       b.onclick = () => { state.active = i; draw(false); renderRoute(); };
       alts.appendChild(b);
@@ -707,7 +730,7 @@ $("stepsToggle").onclick = () => toggleSteps();
 $("startBtn").onclick = startDrive;
 
 // ---------- Ankomst innen ----------
-// Dra senest = ønsket ankomst minus (kjøretid × 1,10)
+// Dra senest = ønsket ankomst minus (justert kjøretid × 1,10)
 function renderArrive(){
   const res = $("arriveResult"), t = state.routes[state.active];
   $("arriveClear").hidden = !state.arriveBy;
@@ -715,7 +738,7 @@ function renderArrive(){
   if (!state.arriveBy || !t){ res.hidden = true; return; }
   const [h, m] = state.arriveBy.split(":").map(Number);
   const arrive = new Date(); arrive.setHours(h, m, 0, 0);
-  const leave = new Date(arrive.getTime() - t.summary.time * 1.10 * 1000);
+  const leave = new Date(arrive.getTime() - mopedSeconds(t.summary.time) * 1.10 * 1000);
   res.hidden = false;
   if (leave.getTime() < Date.now()){
     res.className = "note"; res.textContent = "Du er sent ute – du rekker det ikke uten å kjøre nå.";
@@ -836,7 +859,7 @@ function onDrive(pos){
   // Gjenstående: andel av ruten som er igjen × total tid og lengde
   const total = cum[cum.length - 1] || 1;
   const share = Math.max(0, total - cum[best]) / total;
-  const secsLeft = t.summary.time * share;
+  const secsLeft = mopedSeconds(t.summary.time) * share;
   $("dEta").textContent = "Fremme kl. " + fmtClock(new Date(Date.now() + secsLeft*1000));
   $("dRest").textContent = fmtKm(t.summary.length * share) + " · " + fmtMin(secsLeft);
 
