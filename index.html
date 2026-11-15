@@ -36,13 +36,9 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 
 .panel{position:fixed;z-index:500;left:0;right:0;bottom:0;background:var(--panel);
   border-radius:18px 18px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.18);
-  padding:8px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
+  padding:10px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
   display:flex;flex-direction:column;gap:8px}
 @media (min-width:820px){.panel{left:16px;top:16px;bottom:auto;right:auto;width:380px;border-radius:16px;max-height:calc(100vh - 32px)}}
-.grip{width:40px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 2px;cursor:pointer;flex:none;position:relative}
-.grip::after{content:"";position:absolute;inset:-20px -20px}  /* større trykkflate */
-@media (min-width:820px){.grip{display:none}}
-.panel.collapsed #startView,.panel.collapsed #routeView{display:none}
 
 .sign{flex:none;width:34px;height:34px;border-radius:50%;background:#fff;border:4px solid #d0021b;display:grid;place-items:center;
   font:700 13px/1 var(--font-head);color:#111}
@@ -55,7 +51,15 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .fields{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
 .field{position:relative}
 .field input{width:100%;font:inherit;font-size:16px;min-height:46px;padding:11px 12px 11px 36px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg)}
-.field input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.field input:focus{outline:2px solid var(--accent);outline-offset:-2px;border-color:var(--accent)}
+.field .mag{display:none;position:absolute;left:12px;top:50%;margin-top:-9px;color:var(--muted);pointer-events:none}
+.field.to .mag{left:14px}
+.panel.searching .field .dot{display:none}
+.panel.searching .field .mag{display:block}
+.ctx{margin:-2px 4px 0;color:var(--muted);font-size:14px}
+.hint{margin:24px 8px;text-align:center;color:var(--muted);font-size:15px}
+.ghrow{display:flex;align-items:flex-end;justify-content:space-between}
+.ghrow .textbtn{font-size:14px}
 .field .dot{position:absolute;left:13px;top:17px;width:12px;height:12px;border-radius:50%;border:3px solid var(--accent)}
 .field.to .dot{border-radius:2px;background:var(--accent)}
 .field.to input{font-size:18px;font-weight:500;min-height:56px;padding-left:40px;border-radius:14px}
@@ -96,19 +100,20 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .sugg small{display:block;color:var(--muted);font-size:12px}
 .cancelbtn{display:none}
 .panel.searching .cancelbtn{display:inline-flex}
-.panel.searching .toprow,.panel.searching #install,.panel.searching .savefav,.panel.searching .grip{display:none}
+.panel.searching .toprow,.panel.searching #install,.panel.searching .savefav{display:none}
 .panel.focus-to #fromBlock{display:none!important}
-.panel.focus-from .toRow,.panel.focus-from #favs,.panel.focus-from #swap{display:none}
-.panel.searching #startView{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.panel.focus-from .toRow,.panel.focus-from #swap{display:none}
+.panel.searching #startView{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:4px}
 @media (max-width:819.98px){
-  .panel.searching{top:calc(var(--vvtop,0px) + env(safe-area-inset-top) + 8px);bottom:auto;height:calc(var(--vvh,100dvh) - env(safe-area-inset-top) - 8px);padding-bottom:8px}
+  .panel.searching{top:0;bottom:0;height:auto;border-radius:0;box-shadow:none;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:0}
+  .panel.searching #startView{padding-bottom:calc(var(--kb,0px) + 12px + env(safe-area-inset-bottom))}
 }
 #favs{display:flex;flex-direction:column;gap:6px}
 #favsList{max-height:28vh;overflow:auto}
 .panel.searching #favsList{max-height:none}
 .primary{font:600 17px var(--font-body);min-height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--accent);color:var(--accent-fg);cursor:pointer}
 .primary:disabled{opacity:.5;cursor:default}
-.secondary{font:500 14px var(--font-body);min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+.secondary{font:500 15px var(--font-body);min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
 .linkbtn{font:500 13px var(--font-body);background:none;border:0;color:var(--accent);cursor:pointer;min-height:44px;padding:0 6px;text-decoration:underline}
 .muted{color:var(--muted);font-size:12.5px}
 .note{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:13px}
@@ -116,25 +121,30 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .info{background:var(--bg);color:var(--muted);border-radius:10px;padding:10px;font-size:14px}
 
 /* Rutekort */
-#routeView{display:flex;flex-direction:column;gap:6px;max-height:35vh;overflow:auto;padding:2px}
-.panel.steps-open #routeView{max-height:70vh}
+#routeView{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;padding:2px;overscroll-behavior:contain}
+.panel.steps-open #routeView{max-height:75vh}
 @media (min-width:820px){#routeView,.panel.steps-open #routeView{max-height:calc(100vh - 90px)}}
-.rtop{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.rhead{display:flex;align-items:center;gap:4px}
+.rhead .name{flex:1;min-width:0;font:600 17px var(--font-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rhead #closeRoute{margin-right:-8px}
+.startbtn{width:100%;min-height:52px;font-size:18px}
 .summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:left}
-.summary div{background:var(--bg);border-radius:10px;padding:6px 8px;min-width:0}
+.summary div{background:var(--bg);border-radius:10px;padding:6px 10px;min-width:0}
 .summary b{display:block;font:700 18px/1.15 var(--font-head);font-variant-numeric:tabular-nums;white-space:nowrap}
 .summary span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.altrow{display:grid;grid-template-columns:1fr auto auto 18px;gap:10px;align-items:center;width:100%;min-height:44px;padding:6px 12px;border:0;background:none;color:var(--fg);font:500 14px var(--font-body);text-align:left;cursor:pointer}
+.altrow{display:grid;grid-template-columns:1fr auto auto 18px;gap:10px;align-items:center;width:100%;min-height:48px;padding:6px 12px;border:0;background:none;color:var(--fg);font:500 15px var(--font-body);text-align:left;cursor:pointer}
 .altrow[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:600;box-shadow:inset 4px 0 0 var(--accent)}
 .altrow .tm{font-variant-numeric:tabular-nums}
 .altrow .dl{color:var(--muted);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
 .altrow .ck{width:18px;height:18px;position:relative}
 .altrow[aria-pressed="true"] .ck::after{content:"";position:absolute;left:6px;top:1px;width:6px;height:12px;border:solid var(--accent);border-width:0 3px 3px 0;transform:rotate(45deg)}
-.arrive{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.arrive{display:flex;gap:4px 8px;align-items:center;flex-wrap:wrap}
+.arrivebtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;font-weight:600;line-height:1.25;text-align:left;border-color:var(--accent);color:var(--accent)}
+.arrivebtn svg{flex:none}
+#arriveResult{flex:1;min-width:0}
 .arrive input[type="time"]{font:inherit;font-size:16px;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
 .leave{font-size:14px}
-.actions{display:flex;gap:8px}
-.actions .primary{flex:1}
+#stepsToggle{width:100%;min-height:44px}
 ol.steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
 ol.steps li{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px}
 ol.steps li.next{background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:8px}
@@ -215,7 +225,6 @@ body.driving .panel,body.driving .fab{display:none}
 </div>
 
 <section class="panel" id="panel" data-mode="start" aria-label="Rute">
-  <div class="grip" id="grip" role="button" aria-label="Vis/skjul panel" tabindex="0"></div>
   <div id="msg" role="status" aria-live="polite" hidden></div>
 
   <!-- Startskjerm: ett stort søkefelt -->
@@ -226,7 +235,7 @@ body.driving .panel,body.driving .fab{display:none}
     </div>
     <div id="fromBlock" hidden>
       <div class="fields">
-        <div class="field from"><span class="dot"></span><input id="from" autocomplete="off" placeholder="Fra: adresse eller sted" aria-label="Fra"></div>
+        <div class="field from"><span class="dot"></span><svg class="mag" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="from" autocomplete="off" placeholder="Fra: adresse eller sted" aria-label="Fra"></div>
         <button class="iconbtn" id="swap" title="Bytt fra og til" aria-label="Bytt fra og til">⇅</button>
         <button class="textbtn cancelbtn" id="cancelFrom">Avbryt</button>
       </div>
@@ -234,40 +243,43 @@ body.driving .panel,body.driving .fab{display:none}
       <div><button class="textbtn" id="useMe">◎ Bruk min posisjon</button></div>
     </div>
     <div class="toRow">
-      <div class="field to"><span class="dot"></span><input id="to" autocomplete="off" placeholder="Hvor skal du?" aria-label="Hvor skal du?" enterkeyhint="search"></div>
+      <div class="field to"><span class="dot"></span><svg class="mag" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="to" autocomplete="off" placeholder="Hvor skal du?" aria-label="Hvor skal du?" enterkeyhint="search"></div>
       <button class="textbtn savefav" hidden>Lagre</button>
       <button class="textbtn cancelbtn" id="cancelTo">Avbryt</button>
     </div>
+    <div class="ctx" id="ctx" hidden></div>
     <div class="sugg" id="suggTo" hidden></div>
     <div id="favs" hidden><h3 class="gh">Favoritter</h3><div class="group" id="favsList"></div></div>
+    <div id="recent" hidden><div class="ghrow"><h3 class="gh">Siste søk</h3><button class="textbtn" id="recentClear">Tøm</button></div><div class="group" id="recentList"></div></div>
+    <p class="hint" id="hint" hidden>Søk etter adresse, sted eller skole</p>
     <div class="note" id="install" hidden></div>
   </div>
 
   <!-- Rutekort -->
   <div id="routeView" hidden>
-    <div class="destrow"><span class="name" id="destName"></span><button class="textbtn savefav" hidden>Lagre</button></div>
-    <div class="rtop">
-      <div class="summary">
-        <div><span>Kjøretid</span><b id="rTime">–</b></div>
-        <div><span>Avstand</span><b id="rDist">–</b></div>
-        <div><span>Fremme kl.</span><b id="rEta">–</b></div>
-      </div>
-      <button class="iconbtn" id="closeRoute" title="Avslutt rute" aria-label="Avslutt rute">✕</button>
+    <div class="rhead">
+      <span class="name" id="destName"></span>
+      <button class="textbtn savefav" hidden>Lagre</button>
+      <button class="iconbtn plain" id="closeRoute" title="Avslutt rute" aria-label="Avslutt rute">✕</button>
     </div>
-    <div class="group" id="alts" role="group" aria-label="Velg rute" hidden></div>
+    <button class="primary startbtn" id="startBtn">Start</button>
+    <div class="summary">
+      <div><span>Kjøretid</span><b id="rTime">–</b></div>
+      <div><span>Avstand</span><b id="rDist">–</b></div>
+      <div><span>Fremme kl.</span><b id="rEta">–</b></div>
+    </div>
     <div class="muted" id="carLine" hidden></div>
     <div class="note" id="routeNotes" hidden></div>
+    <div class="group" id="alts" role="group" aria-label="Velg rute" hidden></div>
     <div class="arrive">
-      <button class="textbtn" id="arriveBtn">Må være fremme kl. …</button>
-      <input type="time" id="arriveInput" aria-label="Må være fremme kl." hidden>
+      <button class="secondary arrivebtn" id="arriveBtn"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="arriveTxt">Ankomst innen …</span></button>
+      <input type="time" id="arriveInput" aria-label="Ankomst innen" hidden>
+      <div id="arriveResult" class="leave" hidden></div>
       <button class="linkbtn" id="arriveClear" hidden>Fjern</button>
     </div>
-    <div id="arriveResult" class="leave" hidden></div>
-    <div class="actions">
-      <button class="primary" id="startBtn">Start</button>
-      <button class="secondary" id="stepsToggle" aria-expanded="false" aria-controls="steps">Vis svinger</button>
-    </div>
+    <button class="secondary" id="stepsToggle" aria-expanded="false" aria-controls="steps">Vis svinger</button>
     <ol class="steps" id="steps" hidden></ol>
+  </div>
   </div>
 </section>
 
@@ -378,13 +390,6 @@ $("settingsClose").onclick = closeSettings;
 $("settings").addEventListener("click", e => { if (e.target === $("settings")) closeSettings(); });
 addEventListener("keydown", e => { if (e.key === "Escape" && !$("settings").hidden) closeSettings(); });
 
-// Grep i panelet: åpne/lukke svinger i rutekort, ellers skjul/vis panelet
-$("grip").onclick = () => {
-  if (panel.dataset.mode === "route") toggleSteps();
-  else panel.classList.toggle("collapsed");
-};
-$("grip").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); $("grip").click(); } });
-
 // Meldinger over panelinnholdet
 function showMsg(msg, kind = "err"){ const m = $("msg"); m.className = kind; m.textContent = msg; m.hidden = false; }
 function clearMsg(){ $("msg").hidden = true; $("msg").textContent = ""; }
@@ -437,19 +442,32 @@ let searchWhich = null;
 function syncVV(){
   const v = window.visualViewport, st = document.documentElement.style;
   if (!v){ return; }
-  st.setProperty("--vvh", v.height + "px"); st.setProperty("--vvtop", v.offsetTop + "px");
+  st.setProperty("--kb", Math.max(0, Math.round(innerHeight - v.height - v.offsetTop)) + "px");
+  if (searchWhich && v.offsetTop > 0) window.scrollTo(0, 0);
 }
 if (window.visualViewport){ visualViewport.addEventListener("resize", syncVV); visualViewport.addEventListener("scroll", syncVV); syncVV(); }
 function enterSearch(which){
   searchWhich = which; syncVV();
-  panel.classList.remove("collapsed", "focus-from", "focus-to");
+  panel.classList.remove("focus-from", "focus-to");
   panel.classList.add("searching", "focus-" + which);
-  syncFavs();
+  updateCtx(); syncFavs();
 }
 function exitSearch(){
   searchWhich = null;
   panel.classList.remove("searching", "focus-from", "focus-to");
-  syncFavs();
+  updateCtx(); syncFavs();
+}
+function updateCtx(){
+  const c = $("ctx"), on = searchWhich === "to";
+  c.hidden = !on;
+  if (on) c.textContent = "Fra: " + (state.fromIsMe ? "Min posisjon" : (inputs.from.value.trim() || "velg sted"));
+}
+// Velg et sted (forslag, favoritt eller siste søk)
+function pickPlace(which, p, name, sub){
+  setPoint(which, { lat:p.lat, lon:p.lon }, name);
+  pushRecent({ name, sub, lat:p.lat, lon:p.lon });
+  $(which === "from" ? "suggFrom" : "suggTo").hidden = true; inputs[which].blur(); exitSearch();
+  if (canRoute()) route(); else map.setView([p.lat, p.lon], 14);
 }
 function cancelSearch(){
   const which = searchWhich; if (!which) return;
@@ -483,9 +501,7 @@ for (const which of ["from","to"]){
         b.firstChild.textContent = main; b.lastChild.textContent = sub;
         b.onclick = () => {
           const [lon, lat] = f.geometry.coordinates;
-          setPoint(which, { lat, lon }, main);
-          box.hidden = true; input.blur(); exitSearch();
-          if (canRoute()) route(); else map.setView([lat,lon], 14);
+          pickPlace(which, { lat, lon }, main, sub);
         };
         box.appendChild(b);
       }
@@ -505,6 +521,7 @@ for (const which of ["from","to"]){
       renderFavs();
     }
     if (input.value.trim().length < 3) box.hidden = true;
+    syncFavs();
     search(input.value);
   });
   input.addEventListener("keydown", e => {
@@ -533,9 +550,32 @@ const getFavs = () => store.get("favs", []);
 const isSaved = p => getFavs().some(f => Math.abs(f.lat - p.lat) < 1e-4 && Math.abs(f.lon - p.lon) < 1e-4);
 
 // Favorittliste på startskjermen (vises under feltet når det er tomt) + «Lagre»-knappene ved målet
+const MAX_RECENT = 5;
+const getRecent = () => store.get("recent", []);
+function pushRecent(p){
+  const l = getRecent().filter(r => !(Math.abs(r.lat - p.lat) < 1e-4 && Math.abs(r.lon - p.lon) < 1e-4));
+  l.unshift({ name:p.name, sub:p.sub || "", lat:p.lat, lon:p.lon });
+  store.set("recent", l.slice(0, MAX_RECENT)); renderRecent();
+}
+function renderRecent(){
+  const el = $("recentList"); el.innerHTML = "";
+  for (const r of getRecent()){
+    const b = document.createElement("button"); b.className = "rowbtn";
+    b.innerHTML = '<span class="rtxt"><b></b><small></small></span>';
+    b.querySelector("b").textContent = r.name;
+    const sm = b.querySelector("small"); sm.textContent = r.sub || ""; sm.hidden = !r.sub;
+    b.onclick = () => pickPlace(searchWhich || "to", r, r.name, r.sub);
+    el.appendChild(b);
+  }
+  syncFavs();
+}
+$("recentClear").onclick = () => { store.set("recent", []); renderRecent(); };
 function syncFavs(){
-  const hide = !getFavs().length || (searchWhich && (searchWhich !== "to" || inputs.to.value.trim().length > 0));
-  $("favs").hidden = !!hide;
+  const empty = !!searchWhich && inputs[searchWhich].value.trim().length === 0;
+  const nf = getFavs().length, nr = getRecent().length;
+  $("favs").hidden = !nf || (!!searchWhich && !empty);
+  $("recent").hidden = !(empty && nr);
+  $("hint").hidden = !(empty && !nf && !nr);
 }
 function renderFavs(){
   const el = $("favsList"); el.innerHTML = "";
@@ -544,10 +584,7 @@ function renderFavs(){
     b.className = "rowbtn"; b.title = "Kjør til " + f.name;
     b.innerHTML = '<span class="st">' + STAR_ON + '</span><span class="nm"></span><span class="ch">' + CHEV + '</span>';
     b.querySelector(".nm").textContent = f.name;
-    b.onclick = () => {
-      setPoint("to", { lat:f.lat, lon:f.lon }, f.name);
-      inputs.to.blur(); $("suggTo").hidden = true; exitSearch(); maybeRoute();
-    };
+    b.onclick = () => pickPlace(searchWhich || "to", f, f.name, "");
     el.appendChild(b);
   }
   syncFavs();
@@ -591,7 +628,7 @@ function renderFavSettings(){
     row.append(input, del); box.appendChild(row);
   });
 }
-renderFavs();
+renderFavs(); renderRecent();
 
 // ---------- Posisjon ----------
 function showMe(pos){
@@ -730,7 +767,6 @@ async function route(haveFrom = false){
     renderRoute();
     draw(!state.driving);   // under kjøring flytter vi ikke kartet
     state.spoken = new Set();   // ny rute: alle svinger kan sies på nytt
-    if (!state.driving) panel.classList.remove("collapsed");
   }catch(e){
     if (e.name !== "AbortError" && ctrl === routeCtrl) showError("Fikk ikke kontakt med ruteserveren. Sjekk nettet og prøv igjen.");
   }
@@ -848,7 +884,7 @@ $("startBtn").onclick = startDrive;
 function renderArrive(){
   const res = $("arriveResult"), t = state.routes[state.active];
   $("arriveClear").hidden = !state.arriveBy;
-  $("arriveBtn").textContent = state.arriveBy ? "Fremme kl. " + state.arriveBy : "Må være fremme kl. …";
+  $("arriveTxt").textContent = state.arriveBy ? "Ankomst innen " + state.arriveBy : "Ankomst innen …";
   if (!state.arriveBy || !t){ res.hidden = true; return; }
   const [h, m] = state.arriveBy.split(":").map(Number);
   const arrive = new Date(); arrive.setHours(h, m, 0, 0);
@@ -857,10 +893,8 @@ function renderArrive(){
   if (leave.getTime() < Date.now()){
     res.className = "note"; res.textContent = "Du er sent ute – du rekker det ikke uten å kjøre nå.";
   } else {
-    res.className = "leave"; res.textContent = "";
-    const b = document.createElement("b"); b.textContent = "Dra senest kl. " + fmtClock(leave);
-    const hint = document.createElement("span"); hint.className = "muted"; hint.textContent = " inkl. 10 % margin";
-    res.append(b, hint);
+    res.className = "leave muted"; res.textContent = "inkl. 10 % margin";
+    $("arriveTxt").textContent = "Ankomst innen " + state.arriveBy + " · Dra senest kl. " + fmtClock(leave);
   }
 }
 $("arriveBtn").onclick = () => {
@@ -889,7 +923,6 @@ function endRoute(){
   $("arriveInput").hidden = true;
   clearMsg();
   panel.dataset.mode = "start";
-  panel.classList.remove("collapsed");
   $("routeView").hidden = true; $("startView").hidden = false;
   renderFavs();
 }
@@ -1034,7 +1067,6 @@ async function stopDrive(){
   state.watch = null;
   document.body.classList.remove("driving");
   $("nav").hidden = true; $("driveBar").hidden = true; $("recenter").hidden = true;
-  panel.classList.remove("collapsed");
   if (was){ try{ speechSynthesis.cancel(); }catch(e){} }
   updateBottomUi();
   try{ await wakeLock?.release(); }catch(e){} wakeLock = null;

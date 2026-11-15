@@ -1,5 +1,5 @@
 // Mopedkart 45: lagrer selve appen og kartfliser lokalt, så den åpner raskt og tåler dårlig dekning.
-const APP = "mopedkart-app-v5";
+const APP = "mopedkart-app-v6";
 const TILES = "mopedkart-tiles-v1";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png",
   "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css",
