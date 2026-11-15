@@ -19,13 +19,13 @@
 :root{
   --bg:#f4f7f6; --panel:#ffffff; --fg:#14211e; --muted:#5b6b67; --line:#dbe3e0;
   --accent:#0f5c4d; --accent-fg:#ffffff; --route:#0f7a63; --alt:#8aa39c; --warn:#a15c00; --warn-bg:#fff4e0;
-  --sign:#ffd400; --backdrop:rgba(10,20,17,.45);
+  --sign:#ffd400; --backdrop:rgba(10,20,17,.45); --danger:#c5221f; --danger-fg:#ffffff;
   --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
   --font-head:"Space Grotesk","Inter",system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root{--bg:#0d1513;--panel:#16211e;--fg:#e6efec;--muted:#93a6a0;--line:#2a3a36;
-    --accent:#3fbf9c;--accent-fg:#06221b;--route:#3fd1aa;--alt:#5f7a73;--warn:#ffb54d;--warn-bg:#3a2a10;--backdrop:rgba(0,0,0,.6);color-scheme:dark}
+    --accent:#3fbf9c;--accent-fg:#06221b;--route:#3fd1aa;--alt:#5f7a73;--warn:#ffb54d;--warn-bg:#3a2a10;--backdrop:rgba(0,0,0,.6);--danger:#e4605a;--danger-fg:#1d0707;color-scheme:dark}
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -50,7 +50,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .fromline{font:500 14px var(--font-body);background:none;border:0;color:var(--accent);cursor:pointer;min-height:44px;padding:0 6px;text-align:left;
   text-decoration:underline;text-underline-offset:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 
-#startView{display:flex;flex-direction:column;gap:8px}   /* ingen overflow her: søkeforslag åpner oppover */
+#startView{display:flex;flex-direction:column;gap:8px}
 #fromBlock{display:flex;flex-direction:column;gap:8px}
 .fields{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
 .field{position:relative}
@@ -61,16 +61,51 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .field.to input{font-size:18px;font-weight:500;min-height:56px;padding-left:40px;border-radius:14px}
 .field.to .dot{left:15px;top:22px}
 .iconbtn{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:10px;width:44px;height:44px;cursor:pointer;display:grid;place-items:center;flex:none}
-.sugg{position:absolute;left:0;right:0;bottom:100%;margin:0 0 4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;
-  z-index:10;box-shadow:0 8px 20px rgba(0,0,0,.15);overflow:auto;max-height:45vh}
-@media (min-width:820px){.sugg{bottom:auto;top:100%;margin:4px 0 0}}
-.sugg button{display:block;width:100%;text-align:left;font:inherit;min-height:44px;padding:10px 12px;border:0;background:none;color:var(--fg);cursor:pointer;border-top:1px solid var(--line)}
+.iconbtn.plain{border:0;background:none;color:var(--muted)}
+.textbtn{font:600 15px var(--font-body);background:none;border:0;color:var(--accent);cursor:pointer;min-height:44px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border-radius:8px}
+.textbtn:disabled{color:var(--muted);cursor:default}
+.textbtn svg{flex:none}
+.popbtn{font:500 15px var(--font-body);min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+/* Grupperte lister (som iOS Innstillinger) */
+.group{background:var(--bg);border-radius:12px;overflow:hidden;flex-shrink:0}
+.group>*+*{border-top:1px solid var(--line)}
+.gh{font:600 13px var(--font-body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:6px 4px -4px}
+.gnote{margin:-4px 4px 0}
+.row{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;cursor:pointer;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;color:var(--fg);font:inherit}
+.rtxt{flex:1;min-width:0;display:block}
+.rtxt b{display:block;font:500 16px/1.25 var(--font-body)}
+.rtxt small{display:block;color:var(--muted);font-size:13px;line-height:1.3;margin-top:1px}
+.rowbtn{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:6px 14px;border:0;background:none;color:var(--fg);font:500 16px var(--font-body);text-align:left;cursor:pointer}
+.rowbtn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rowbtn svg{flex:none}
+.rowbtn .st{color:var(--accent)}
+.rowbtn .ch{color:var(--muted)}
+.rowbtn:active,.sugg button:active{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.switch{appearance:none;-webkit-appearance:none;flex:none;width:51px;height:31px;border-radius:16px;background:color-mix(in srgb,var(--muted) 45%,var(--bg));position:relative;margin:0;cursor:pointer;transition:background .2s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
+.switch:checked{background:var(--accent)}
+.switch:checked::after{transform:translateX(20px)}
+.radio{appearance:none;-webkit-appearance:none;flex:none;width:24px;height:24px;margin:0;position:relative;cursor:pointer}
+.radio::after{content:"";position:absolute;left:8px;top:3px;width:7px;height:14px;border:solid var(--accent);border-width:0 3px 3px 0;transform:rotate(45deg);opacity:0}
+.radio:checked::after{opacity:1}
+/* Søk: forslagene ligger alltid under feltet */
+.sugg{background:var(--bg);border-radius:12px;overflow:hidden}
+.sugg button{display:block;width:100%;text-align:left;font:inherit;min-height:48px;padding:10px 14px;border:0;background:none;color:var(--fg);cursor:pointer;border-top:1px solid var(--line)}
 .sugg button:first-child{border-top:0}
-.sugg button:hover,.sugg button:focus{background:var(--bg)}
+.sugg button:hover,.sugg button:focus{background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .sugg small{display:block;color:var(--muted);font-size:12px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.chip{font:500 14px var(--font-body);min-height:44px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.cancelbtn{display:none}
+.panel.searching .cancelbtn{display:inline-flex}
+.panel.searching .toprow,.panel.searching #install,.panel.searching .savefav,.panel.searching .grip{display:none}
+.panel.focus-to #fromBlock{display:none!important}
+.panel.focus-from .toRow,.panel.focus-from #favs,.panel.focus-from #swap{display:none}
+.panel.searching #startView{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+@media (max-width:819.98px){
+  .panel.searching{top:calc(var(--vvtop,0px) + env(safe-area-inset-top) + 8px);bottom:auto;height:calc(var(--vvh,100dvh) - env(safe-area-inset-top) - 8px);padding-bottom:8px}
+}
+#favs{display:flex;flex-direction:column;gap:6px}
+#favsList{max-height:28vh;overflow:auto}
+.panel.searching #favsList{max-height:none}
 .primary{font:600 17px var(--font-body);min-height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--accent);color:var(--accent-fg);cursor:pointer}
 .primary:disabled{opacity:.5;cursor:default}
 .secondary{font:500 14px var(--font-body);min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
@@ -89,7 +124,12 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .summary div{background:var(--bg);border-radius:10px;padding:6px 8px;min-width:0}
 .summary b{display:block;font:700 18px/1.15 var(--font-head);font-variant-numeric:tabular-nums;white-space:nowrap}
 .summary span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.alts{display:flex;gap:6px;flex-wrap:wrap}
+.altrow{display:grid;grid-template-columns:1fr auto auto 18px;gap:10px;align-items:center;width:100%;min-height:44px;padding:6px 12px;border:0;background:none;color:var(--fg);font:500 14px var(--font-body);text-align:left;cursor:pointer}
+.altrow[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:600;box-shadow:inset 4px 0 0 var(--accent)}
+.altrow .tm{font-variant-numeric:tabular-nums}
+.altrow .dl{color:var(--muted);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+.altrow .ck{width:18px;height:18px;position:relative}
+.altrow[aria-pressed="true"] .ck::after{content:"";position:absolute;left:6px;top:1px;width:6px;height:12px;border:solid var(--accent);border-width:0 3px 3px 0;transform:rotate(45deg)}
 .arrive{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .arrive input[type="time"]{font:inherit;font-size:16px;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
 .leave{font-size:14px}
@@ -117,25 +157,25 @@ body.driving .panel,body.driving .fab{display:none}
 .nav b{font:700 44px/1 var(--font-head);display:block;font-variant-numeric:tabular-nums}
 .nav span{display:block;font:600 22px/1.2 var(--font-body);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .drivebar{position:fixed;z-index:600;left:0;right:0;bottom:0;background:var(--panel);box-shadow:0 -4px 18px rgba(0,0,0,.25);border-radius:18px 18px 0 0;
-  padding:10px max(14px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px}
-.drivebar .info{flex:1;min-width:0}
-.drivebar .info b{display:block;font:700 26px/1.1 var(--font-head);font-variant-numeric:tabular-nums;white-space:nowrap}
-.drivebar .info span{font-size:15px;color:var(--muted);white-space:nowrap}
-.drivebar .iconbtn{width:56px;height:56px;font-size:26px;border-radius:14px}
-.drivebar .endbtn{min-height:56px;padding:0 18px;border-radius:14px;border:0;background:var(--warn-bg);color:var(--warn);font:700 17px var(--font-body);cursor:pointer}
+  padding:10px max(14px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px}
+.drivebar .info{flex:1 1 0;min-width:0;background:none;padding:0;border-radius:0}
+.drivebar .eta{display:flex;align-items:baseline;gap:6px;min-width:0;white-space:nowrap}
+.drivebar .eta .lbl{font:500 14px var(--font-body);color:var(--muted);flex:none}
+.drivebar .eta b{font:700 22px/1.15 var(--font-head);font-variant-numeric:tabular-nums;min-width:0}
+.drivebar #dRest{display:block;font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drivebar .iconbtn{width:52px;height:52px;border-radius:14px}
+.drivebar .iconbtn svg{width:26px;height:26px}
+.drivebar .endbtn{flex:none;min-height:52px;padding:0 18px;border-radius:14px;border:0;background:var(--danger);color:var(--danger-fg);font:700 17px var(--font-body);cursor:pointer}
 .recenter{position:fixed;z-index:600;left:50%;transform:translateX(-50%);bottom:calc(var(--bottom-ui,0px) + 36px);min-height:48px;padding:0 22px;border-radius:24px;
   border:0;background:var(--accent);color:var(--accent-fg);font:600 17px var(--font-body);box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer}
 
 /* Favoritter */
-.toRow{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
-.savefav{min-height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:500 14px var(--font-body);cursor:pointer;white-space:nowrap}
-.savefav:disabled{color:var(--muted);cursor:default}
+.toRow{display:grid;grid-template-columns:1fr auto;gap:4px;align-items:start}
 .destrow{display:flex;align-items:center;gap:8px}
 .destrow .name{flex:1;min-width:0;font:600 16px var(--font-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.favlist{display:flex;flex-direction:column;gap:8px}
-.favrow{display:grid;grid-template-columns:1fr 44px;gap:8px}
-.favrow input{font:inherit;font-size:16px;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);min-width:0}
-.sheet h3{font:600 15px var(--font-head);margin:4px 0 0}
+.favrow{display:grid;grid-template-columns:1fr 48px;align-items:center}
+.favrow input{font:inherit;font-size:16px;min-height:48px;padding:0 14px;border:0;background:none;color:var(--fg);min-width:0;border-radius:0}
+.group .pad{margin:0;padding:12px 14px}
 
 /* Innstillinger */
 .overlay{position:fixed;inset:0;z-index:700;background:var(--backdrop);display:flex;align-items:flex-end;justify-content:center}
@@ -144,7 +184,11 @@ body.driving .panel,body.driving .fab{display:none}
 @media (min-width:820px){.overlay{align-items:center}.sheet{border-radius:16px}}
 .sheet h2{font:700 18px/1.2 var(--font-head);margin:0}
 
-.me{width:18px;height:18px;border-radius:50%;background:#2a7bf6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(42,123,246,.25)}
+.me{width:36px;height:36px;position:relative}
+.me .pt{position:absolute;left:9px;top:9px;width:18px;height:18px;border-radius:50%;background:#2a7bf6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(42,123,246,.25)}
+.me .hd{position:absolute;inset:0;display:none;transform:rotate(var(--h,0deg));filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.me.has-h .hd{display:block}
+.me .hd::before{content:"";position:absolute;left:50%;top:0;margin-left:-7px;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:12px solid #2a7bf6}
 .leaflet-container{font-family:var(--font-body)}
 @media (prefers-color-scheme: dark){ .leaflet-tile-pane{filter:brightness(.75) contrast(1.1) saturate(.7)} }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
@@ -165,8 +209,8 @@ body.driving .panel,body.driving .fab{display:none}
 </div>
 <button class="recenter" id="recenter" hidden>Følg meg</button>
 <div class="drivebar" id="driveBar" hidden>
-  <div class="info"><b id="dEta">–</b><span id="dRest">–</span></div>
-  <button class="iconbtn" id="soundBtn" aria-label="Slå av lyd" title="Lyd">🔊</button>
+  <div class="info"><div class="eta"><span class="lbl">Fremme kl.</span><b id="dEta">–</b></div><span id="dRest">–</span></div>
+  <button class="iconbtn" id="soundBtn" aria-label="Slå av lyd" title="Lyd"></button>
   <button class="endbtn" id="endDrive">Avslutt</button>
 </div>
 
@@ -182,22 +226,26 @@ body.driving .panel,body.driving .fab{display:none}
     </div>
     <div id="fromBlock" hidden>
       <div class="fields">
-        <div class="field from"><span class="dot"></span><input id="from" autocomplete="off" placeholder="Fra: adresse eller sted" aria-label="Fra"><div class="sugg" hidden></div></div>
+        <div class="field from"><span class="dot"></span><input id="from" autocomplete="off" placeholder="Fra: adresse eller sted" aria-label="Fra"></div>
         <button class="iconbtn" id="swap" title="Bytt fra og til" aria-label="Bytt fra og til">⇅</button>
+        <button class="textbtn cancelbtn" id="cancelFrom">Avbryt</button>
       </div>
-      <div><button class="chip" id="useMe">◎ Bruk min posisjon</button></div>
+      <div class="sugg" id="suggFrom" hidden></div>
+      <div><button class="textbtn" id="useMe">◎ Bruk min posisjon</button></div>
     </div>
     <div class="toRow">
-      <div class="field to"><span class="dot"></span><input id="to" autocomplete="off" placeholder="Hvor skal du?" aria-label="Hvor skal du?" enterkeyhint="search"><div class="sugg" hidden></div></div>
-      <button class="savefav" hidden>☆ Lagre</button>
+      <div class="field to"><span class="dot"></span><input id="to" autocomplete="off" placeholder="Hvor skal du?" aria-label="Hvor skal du?" enterkeyhint="search"></div>
+      <button class="textbtn savefav" hidden>Lagre</button>
+      <button class="textbtn cancelbtn" id="cancelTo">Avbryt</button>
     </div>
-    <div class="chips" id="favs"></div>
+    <div class="sugg" id="suggTo" hidden></div>
+    <div id="favs" hidden><h3 class="gh">Favoritter</h3><div class="group" id="favsList"></div></div>
     <div class="note" id="install" hidden></div>
   </div>
 
   <!-- Rutekort -->
   <div id="routeView" hidden>
-    <div class="destrow"><span class="name" id="destName"></span><button class="savefav" hidden>☆ Lagre</button></div>
+    <div class="destrow"><span class="name" id="destName"></span><button class="textbtn savefav" hidden>Lagre</button></div>
     <div class="rtop">
       <div class="summary">
         <div><span>Kjøretid</span><b id="rTime">–</b></div>
@@ -206,11 +254,11 @@ body.driving .panel,body.driving .fab{display:none}
       </div>
       <button class="iconbtn" id="closeRoute" title="Avslutt rute" aria-label="Avslutt rute">✕</button>
     </div>
-    <div class="alts" id="alts"></div>
+    <div class="group" id="alts" role="group" aria-label="Velg rute" hidden></div>
     <div class="muted" id="carLine" hidden></div>
     <div class="note" id="routeNotes" hidden></div>
     <div class="arrive">
-      <button class="chip" id="arriveBtn">Må være fremme kl. …</button>
+      <button class="textbtn" id="arriveBtn">Må være fremme kl. …</button>
       <input type="time" id="arriveInput" aria-label="Må være fremme kl." hidden>
       <button class="linkbtn" id="arriveClear" hidden>Fjern</button>
     </div>
@@ -227,20 +275,21 @@ body.driving .panel,body.driving .fab{display:none}
 <div class="overlay" id="settings" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <h2 id="settingsTitle">Innstillinger</h2>
-    <div class="chips">
-      <button class="chip" id="optFerry" aria-pressed="false">Unngå ferje</button>
-      <button class="chip" id="optToll" aria-pressed="false">Unngå bomvei</button>
-      <button class="chip" id="optCalm" aria-pressed="false">Roligere veier</button>
+    <h3 class="gh">Rute</h3>
+    <div class="group">
+      <label class="row"><span class="rtxt"><b>Unngå ferje</b><small>Velg vei rundt fjorden når det går</small></span><input type="checkbox" role="switch" class="switch" id="optFerry"></label>
+      <label class="row"><span class="rtxt"><b>Unngå bomvei</b><small>Unngå bomstasjoner der det er mulig</small></span><input type="checkbox" role="switch" class="switch" id="optToll"></label>
+      <label class="row"><span class="rtxt"><b>Roligere veier</b><small>Færre hovedveier, kan gi litt lengre tur</small></span><input type="checkbox" role="switch" class="switch" id="optCalm"></label>
     </div>
-    <h3>Kjøretid</h3>
-    <p class="muted">Mopedbiler bruker lengre tid enn fartsgrensen tilsier. Juster hvis tidene ikke stemmer for deg.</p>
-    <div class="chips" id="timeOpts" role="group" aria-label="Kjøretid"></div>
-    <h3>Favoritter</h3>
-    <div class="favlist" id="favList"></div>
-    <h3>Om dataene</h3>
-    <p class="muted">Ruter uten motorvei, tid beregnet med maks 45 km/t. Ruter fra OpenStreetMap via Valhalla (mopedprofil),
+    <h3 class="gh">Kjøretid</h3>
+    <div class="group" id="timeOpts" role="radiogroup" aria-label="Kjøretid"></div>
+    <p class="muted gnote">Mopedbiler bruker lengre tid enn fartsgrensen tilsier. Juster hvis tidene ikke stemmer for deg.</p>
+    <h3 class="gh">Favoritter</h3>
+    <div class="group" id="favList"></div>
+    <h3 class="gh">Om dataene</h3>
+    <div class="group"><p class="muted pad">Ruter uten motorvei, tid beregnet med maks 45 km/t. Ruter fra OpenStreetMap via Valhalla (mopedprofil),
       søk fra Photon. Kart © OpenStreetMap-bidragsytere. Følg alltid skilt – veidata kan ha feil.
-      Trykk lenge i kartet for å sette start eller mål.</p>
+      Trykk lenge i kartet for å sette start eller mål.</p></div>
     <button class="primary" id="settingsClose">Ferdig</button>
   </div>
 </div>
@@ -266,7 +315,12 @@ map.on("moveend", () => { const c = map.getCenter(); store.set("view",[c.lat,c.l
 
 const pinIcon = (label, color) => L.divIcon({ className:"", iconSize:[28,28], iconAnchor:[14,14],
   html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};color:#fff;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.4);display:grid;place-items:center;font:700 13px Inter,sans-serif">${label}</div>` });
-const meIcon = L.divIcon({ className:"", iconSize:[18,18], iconAnchor:[9,9], html:'<div class="me"></div>' });
+const meIcon = L.divIcon({ className:"", iconSize:[36,36], iconAnchor:[18,18], html:'<div class="me"><i class="hd"></i><i class="pt"></i></div>' });
+const STAR_ON = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
+const STAR_OFF = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
+const CHEV = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>';
+const SND_ON = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const SND_OFF = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5v5h4l5 4v-13l-5 4z" fill="currentColor"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
 
 const state = { from:null, fromIsMe:true, to:null, routes:[], active:0, layers:[], me:null, meMarker:null, watch:null,
   driving:false, autoFollow:true, spoken:new Set(), cum:[], activePts:null,
@@ -283,29 +337,34 @@ const opts = {
 };
 const optBtns = { ferry:$("optFerry"), toll:$("optToll"), calm:$("optCalm") };
 for (const k in optBtns){
-  optBtns[k].setAttribute("aria-pressed", opts[k]);
-  optBtns[k].onclick = () => {
-    opts[k] = !opts[k]; optBtns[k].setAttribute("aria-pressed", opts[k]); store.set(k, opts[k]);
+  optBtns[k].checked = !!opts[k];
+  optBtns[k].onchange = () => {
+    opts[k] = optBtns[k].checked; store.set(k, opts[k]);
     if (routeOpen) route(!!state.from);
   };
 }
 
 // Tidsjustering: Valhallas tid er for optimistisk for mopedbil (treg akselerasjon, bakker, rundkjøringer, kryss)
 const DEFAULT_TIME_FACTOR = 1.45;
-const TIME_CHOICES = [["Som beregnet", 1], ["Litt mer", 1.25], ["Realistisk", 1.45], ["Mye mer", 1.65]];
+const TIME_CHOICES = [["Som beregnet", 1, "Rutetjenestens tid"], ["Litt mer", 1.25, "+25 %"], ["Realistisk", 1.45, "+45 % (anbefalt)"], ["Mye mer", 1.65, "+65 %"]];
 let timeFactor = store.get("timeFactor", DEFAULT_TIME_FACTOR);
 if (!TIME_CHOICES.some(c => c[1] === timeFactor)) timeFactor = DEFAULT_TIME_FACTOR;
 const mopedSeconds = raw => raw * timeFactor;
 function renderTimeOpts(){
   const box = $("timeOpts"); box.innerHTML = "";
-  TIME_CHOICES.forEach(([label, f]) => {
-    const b = document.createElement("button"); b.className = "chip"; b.textContent = label;
-    b.setAttribute("aria-pressed", f === timeFactor);
-    b.onclick = () => {
-      timeFactor = f; store.set("timeFactor", f); renderTimeOpts();
+  TIME_CHOICES.forEach(([label, f, desc]) => {
+    const row = document.createElement("label"); row.className = "row";
+    const t = document.createElement("span"); t.className = "rtxt";
+    const b = document.createElement("b"); b.textContent = label;
+    const sm = document.createElement("small"); sm.textContent = desc;
+    t.append(b, sm);
+    const r = document.createElement("input"); r.type = "radio"; r.name = "timeFactor"; r.className = "radio";
+    r.checked = f === timeFactor;
+    r.onchange = () => {
+      timeFactor = f; store.set("timeFactor", f);
       if (state.routes.length && routeOpen) renderRoute();
     };
-    box.appendChild(b);
+    row.append(t, r); box.appendChild(row);
   });
 }
 renderTimeOpts();
@@ -373,9 +432,39 @@ function fmtPlace(f){
 }
 function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
+// Søkemodus: arket fyller skjermen, aktivt felt øverst og forslag under
+let searchWhich = null;
+function syncVV(){
+  const v = window.visualViewport, st = document.documentElement.style;
+  if (!v){ return; }
+  st.setProperty("--vvh", v.height + "px"); st.setProperty("--vvtop", v.offsetTop + "px");
+}
+if (window.visualViewport){ visualViewport.addEventListener("resize", syncVV); visualViewport.addEventListener("scroll", syncVV); syncVV(); }
+function enterSearch(which){
+  searchWhich = which; syncVV();
+  panel.classList.remove("collapsed", "focus-from", "focus-to");
+  panel.classList.add("searching", "focus-" + which);
+  syncFavs();
+}
+function exitSearch(){
+  searchWhich = null;
+  panel.classList.remove("searching", "focus-from", "focus-to");
+  syncFavs();
+}
+function cancelSearch(){
+  const which = searchWhich; if (!which) return;
+  $(which === "from" ? "suggFrom" : "suggTo").hidden = true;
+  inputs[which].blur();
+  if (which === "to" && !state.to) inputs.to.value = "";
+  if (which === "from" && !state.from && !state.fromIsMe){ setFromMe(null); closeFrom(); }
+  exitSearch(); renderFavs();
+}
+$("cancelFrom").onclick = cancelSearch;
+$("cancelTo").onclick = cancelSearch;
+
 for (const which of ["from","to"]){
   const input = inputs[which];
-  const box = input.parentElement.querySelector(".sugg");
+  const box = $(which === "from" ? "suggFrom" : "suggTo");
   let ctrl;
   const search = debounce(async q => {
     if (q.trim().length < 3){ box.hidden = true; return; }
@@ -395,7 +484,7 @@ for (const which of ["from","to"]){
         b.onclick = () => {
           const [lon, lat] = f.geometry.coordinates;
           setPoint(which, { lat, lon }, main);
-          box.hidden = true; input.blur();
+          box.hidden = true; input.blur(); exitSearch();
           if (canRoute()) route(); else map.setView([lat,lon], 14);
         };
         box.appendChild(b);
@@ -403,6 +492,7 @@ for (const which of ["from","to"]){
       box.hidden = false;
     }catch(e){ if (e.name !== "AbortError"){ box.innerHTML = '<button disabled>Søket svarte ikke. Sjekk nettet og prøv igjen.</button>'; box.hidden = false; } }
   }, 300);
+  input.addEventListener("focus", () => enterSearch(which));
   input.addEventListener("input", () => {
     // Skriver brukeren på nytt, er stedet ikke lenger valgt
     if (which === "from"){
@@ -414,10 +504,13 @@ for (const which of ["from","to"]){
       if (markers.to){ map.removeLayer(markers.to); markers.to = null; }
       renderFavs();
     }
+    if (input.value.trim().length < 3) box.hidden = true;
     search(input.value);
   });
-  input.addEventListener("keydown", e => { if (e.key === "Enter"){ const b = box.querySelector("button:not([disabled])"); if (b) b.click(); } });
-  input.addEventListener("blur", () => setTimeout(() => box.hidden = true, 200));
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter"){ const b = box.querySelector("button:not([disabled])"); if (b) b.click(); }
+    else if (e.key === "Escape") cancelSearch();
+  });
 }
 
 // Bytt fra og til (tilgjengelig når Fra er utvidet)
@@ -439,20 +532,30 @@ const MAX_FAVS = 8;
 const getFavs = () => store.get("favs", []);
 const isSaved = p => getFavs().some(f => Math.abs(f.lat - p.lat) < 1e-4 && Math.abs(f.lon - p.lon) < 1e-4);
 
-// Favoritt-chips på startskjermen + «Lagre»-knappene ved målet
+// Favorittliste på startskjermen (vises under feltet når det er tomt) + «Lagre»-knappene ved målet
+function syncFavs(){
+  const hide = !getFavs().length || (searchWhich && (searchWhich !== "to" || inputs.to.value.trim().length > 0));
+  $("favs").hidden = !!hide;
+}
 function renderFavs(){
-  const el = $("favs"); el.innerHTML = "";
+  const el = $("favsList"); el.innerHTML = "";
   for (const f of getFavs()){
     const b = document.createElement("button");
-    b.className = "chip"; b.textContent = "★ " + f.name; b.title = "Kjør til " + f.name;
-    b.onclick = () => { setPoint("to", { lat:f.lat, lon:f.lon }, f.name); maybeRoute(); };
+    b.className = "rowbtn"; b.title = "Kjør til " + f.name;
+    b.innerHTML = '<span class="st">' + STAR_ON + '</span><span class="nm"></span><span class="ch">' + CHEV + '</span>';
+    b.querySelector(".nm").textContent = f.name;
+    b.onclick = () => {
+      setPoint("to", { lat:f.lat, lon:f.lon }, f.name);
+      inputs.to.blur(); $("suggTo").hidden = true; exitSearch(); maybeRoute();
+    };
     el.appendChild(b);
   }
+  syncFavs();
   $("destName").textContent = inputs.to.value || "";
   document.querySelectorAll(".savefav").forEach(b => {
     const saved = !!state.to && isSaved(state.to);
     b.hidden = !state.to; b.disabled = saved;
-    b.textContent = saved ? "★ Lagret" : "☆ Lagre";
+    b.innerHTML = saved ? STAR_ON + " Lagret" : STAR_OFF + " Lagre";
   });
 }
 document.querySelectorAll(".savefav").forEach(b => b.onclick = () => {
@@ -468,8 +571,8 @@ function renderFavSettings(){
   const box = $("favList"); box.innerHTML = "";
   const list = getFavs();
   if (!list.length){
-    const p = document.createElement("p"); p.className = "muted";
-    p.textContent = "Ingen favoritter ennå. Velg et mål og trykk «☆ Lagre».";
+    const p = document.createElement("p"); p.className = "muted pad";
+    p.textContent = "Ingen favoritter ennå. Velg et mål og trykk «Lagre».";
     box.appendChild(p); return;
   }
   list.forEach((f, i) => {
@@ -483,7 +586,7 @@ function renderFavSettings(){
       l[i].name = v; store.set("favs", l); renderFavs();
     };
     const del = document.createElement("button");
-    del.className = "iconbtn"; del.textContent = "✕"; del.title = "Slett"; del.setAttribute("aria-label", "Slett favoritt " + f.name);
+    del.className = "iconbtn plain"; del.textContent = "✕"; del.title = "Slett"; del.setAttribute("aria-label", "Slett favoritt " + f.name);
     del.onclick = () => { const l = getFavs(); l.splice(i, 1); store.set("favs", l); renderFavs(); renderFavSettings(); };
     row.append(input, del); box.appendChild(row);
   });
@@ -496,6 +599,12 @@ function showMe(pos){
   state.me = p;
   if (!state.meMarker) state.meMarker = L.marker([p.lat,p.lon], { icon: meIcon, zIndexOffset: 1000, interactive:false }).addTo(map);
   else state.meMarker.setLatLng([p.lat,p.lon]);
+  const me = state.meMarker.getElement()?.querySelector(".me");
+  if (me){
+    const h = pos.coords.heading;
+    if (typeof h === "number" && isFinite(h)){ me.style.setProperty("--h", h + "deg"); me.classList.add("has-h"); }
+    else me.classList.remove("has-h");
+  }
   return p;
 }
 function geoMessage(e){
@@ -522,8 +631,8 @@ map.on("contextmenu", e => {
   const label = `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
   const div = document.createElement("div");
   div.style.cssText = "display:flex;gap:6px";
-  const a = document.createElement("button"); a.className = "chip"; a.textContent = "Start her";
-  const b = document.createElement("button"); b.className = "chip"; b.textContent = "Kjør hit";
+  const a = document.createElement("button"); a.className = "popbtn"; a.textContent = "Start her";
+  const b = document.createElement("button"); b.className = "popbtn"; b.textContent = "Kjør hit";
   div.append(a, b);
   const pop = L.popup().setLatLng(e.latlng).setContent(div).openOn(map);
   a.onclick = () => { map.closePopup(pop); setPoint("from", p, label); maybeRoute(); };
@@ -675,6 +784,7 @@ function draw(fit = true){
 // ---------- Rutekort ----------
 function openRouteView(){
   panel.dataset.mode = "route";
+  exitSearch();
   $("startView").hidden = true; $("routeView").hidden = false;
   if (!routeOpen){
     routeOpen = true;
@@ -689,14 +799,18 @@ function renderRoute(){
   $("rDist").textContent = fmtKm(s.length);
   $("rEta").textContent = fmtClock(new Date(Date.now() + mopedSeconds(s.time)*1000));
 
-  // Alternativer: første = Raskest, resten viser ekstra minutter
+  // Alternativer: én rad per rute (navn, tid, ekstra minutter)
   const alts = $("alts"); alts.innerHTML = "";
+  alts.hidden = state.routes.length < 2;
   if (state.routes.length > 1){
     state.routes.forEach((r, i) => {
-      const b = document.createElement("button"); b.className = "chip";
+      const b = document.createElement("button"); b.className = "altrow";
       b.setAttribute("aria-pressed", i === state.active);
       const extra = Math.max(1, Math.round(mopedSeconds(r.summary.time - state.routes[0].summary.time) / 60));
-      b.textContent = i === 0 ? "Raskest" : "Alternativ · +" + extra + " min";
+      b.innerHTML = '<span class="nm"></span><span class="tm"></span><span class="dl"></span><span class="ck" aria-hidden="true"></span>';
+      b.querySelector(".nm").textContent = i === 0 ? "Raskest" : "Alternativ " + i;
+      b.querySelector(".tm").textContent = fmtMin(mopedSeconds(r.summary.time));
+      b.querySelector(".dl").textContent = i === 0 ? "" : "+" + extra + " min";
       b.onclick = () => { state.active = i; draw(false); renderRoute(); };
       alts.appendChild(b);
     });
@@ -820,7 +934,7 @@ function speak(text){
 function renderSound(){
   const b = $("soundBtn");
   b.hidden = !speechOk;
-  b.textContent = soundOn ? "🔊" : "🔇";
+  b.innerHTML = soundOn ? SND_ON : SND_OFF;
   b.setAttribute("aria-label", soundOn ? "Slå av lyd" : "Slå på lyd");
 }
 $("soundBtn").onclick = () => {
@@ -860,7 +974,7 @@ function onDrive(pos){
   const total = cum[cum.length - 1] || 1;
   const share = Math.max(0, total - cum[best]) / total;
   const secsLeft = mopedSeconds(t.summary.time) * share;
-  $("dEta").textContent = "Fremme kl. " + fmtClock(new Date(Date.now() + secsLeft*1000));
+  $("dEta").textContent = fmtClock(new Date(Date.now() + secsLeft*1000));
   $("dRest").textContent = fmtKm(t.summary.length * share) + " · " + fmtMin(secsLeft);
 
   // Neste sving
@@ -959,7 +1073,7 @@ if (!standalone && !store.get("installDismissed", false)){
   addEventListener("beforeinstallprompt", e => {
     e.preventDefault(); deferred = e;
     inst.textContent = "";
-    const b = document.createElement("button"); b.className = "chip"; b.textContent = "Installer Mopedkart på telefonen";
+    const b = document.createElement("button"); b.className = "textbtn"; b.textContent = "Installer Mopedkart på telefonen";
     b.onclick = async () => { deferred.prompt(); await deferred.userChoice; inst.hidden = true; };
     inst.append(b, " ", close); inst.hidden = false;
   });
