@@ -760,7 +760,8 @@ async function route(haveFrom = false){
         : "Ruteberegningen feilet: " + (j.error || r.status) + ". Prøv igjen om litt.");
       return;
     }
-    state.routes = [j.trip, ...(j.alternates || []).map(a => a.trip)];
+    // Ruteserveren sorterer etter vektet kostnad, ikke tid: sorter så den raskeste kommer først
+    state.routes = [j.trip, ...(j.alternates || []).map(a => a.trip)].sort((x, y) => x.summary.time - y.summary.time);
     state.active = 0;
     clearMsg();
     openRouteView();
@@ -842,11 +843,12 @@ function renderRoute(){
     state.routes.forEach((r, i) => {
       const b = document.createElement("button"); b.className = "altrow";
       b.setAttribute("aria-pressed", i === state.active);
-      const extra = Math.max(1, Math.round(mopedSeconds(r.summary.time - state.routes[0].summary.time) / 60));
+      // Forskjell regnet fra avrundede minutter, så tallene i raden alltid stemmer med hverandre
+      const extra = Math.round(mopedSeconds(r.summary.time) / 60) - Math.round(mopedSeconds(state.routes[0].summary.time) / 60);
       b.innerHTML = '<span class="nm"></span><span class="tm"></span><span class="dl"></span><span class="ck" aria-hidden="true"></span>';
       b.querySelector(".nm").textContent = i === 0 ? "Raskest" : "Alternativ " + i;
       b.querySelector(".tm").textContent = fmtMin(mopedSeconds(r.summary.time));
-      b.querySelector(".dl").textContent = i === 0 ? "" : "+" + extra + " min";
+      b.querySelector(".dl").textContent = i === 0 ? "" : (extra > 0 ? "+" + extra + " min" : "samme tid");
       b.onclick = () => { state.active = i; draw(false); renderRoute(); };
       alts.appendChild(b);
     });
