@@ -6,98 +6,105 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Mopedkart">
-<meta name="theme-color" content="#0f5c4d">
+<meta name="theme-color" content="#bacfaf" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101a13" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Mopedkart 45</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500&display=swap">
 <style>
-/* Layout: kart i full skjerm, panel nederst (mobil) / øverst til venstre (desktop) */
+/* Layout: kart i full skjerm, panel nederst (mobil) / øverst til venstre (desktop).
+   Stil: salvegrønt panel, blekksvart tekst og tynne streker, smal display-skrift (Bebas Neue) og Oswald. */
 :root{
-  --bg:#f4f7f6; --panel:#ffffff; --fg:#14211e; --muted:#5b6b67; --line:#dbe3e0;
-  --accent:#0f5c4d; --accent-fg:#ffffff; --route:#0f7a63; --alt:#8aa39c; --warn:#a15c00; --warn-bg:#fff4e0;
-  --sign:#ffd400; --backdrop:rgba(10,20,17,.45); --danger:#c5221f; --danger-fg:#ffffff;
-  --font-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
-  --font-head:"Space Grotesk","Inter",system-ui,sans-serif;
+  --bg:#cfdfc5; --field:#d9e7d0; --panel:#bacfaf; --fg:#111111; --muted:#3a4936; --line:#111111; --rule:rgba(17,17,17,.35);
+  --accent:#1d4a2c; --accent-fg:#ffffff; --sel:#d6e6cc; --route:#21a878; --alt:#4a4f4a; --warn:#6b3d00; --warn-bg:#f3e3c2;
+  --btn:#111111; --btn-fg:#ffffff; --nav-bg:#1f4d2e; --nav-fg:#f4f8ea;
+  --sign:#ffd400; --backdrop:rgba(10,20,12,.5); --danger:#a8141f; --danger-fg:#ffffff; --shadow:2px 2px 5.5px rgba(0,0,0,.25);
+  --font-body:"Oswald",system-ui,-apple-system,"Segoe UI","Arial Narrow",sans-serif;
+  --font-head:"Bebas Neue","Oswald","Arial Narrow",Impact,sans-serif;
 }
 @media (prefers-color-scheme: dark){
-  :root{--bg:#0d1513;--panel:#16211e;--fg:#e6efec;--muted:#93a6a0;--line:#2a3a36;
-    --accent:#3fbf9c;--accent-fg:#06221b;--route:#3fd1aa;--alt:#5f7a73;--warn:#ffb54d;--warn-bg:#3a2a10;--backdrop:rgba(0,0,0,.6);--danger:#e4605a;--danger-fg:#1d0707;color-scheme:dark}
+  :root{--bg:#1a271d;--field:#142018;--panel:#101a13;--fg:#e8f0dc;--muted:#a9b9a2;--line:#e8f0dc;--rule:rgba(232,240,220,.3);
+    --accent:#8fc77f;--accent-fg:#0d1a10;--sel:#233a28;--route:#4fe0ae;--alt:#8a948a;--warn:#ffc266;--warn-bg:#3a2d12;
+    --btn:#e8f0dc;--btn-fg:#101a13;--nav-bg:#2f5d3a;--nav-fg:#f4f8ea;--backdrop:rgba(0,0,0,.65);--danger:#ff8a80;--danger-fg:#2a0707;--shadow:2px 2px 5.5px rgba(0,0,0,.5);color-scheme:dark}
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--fg);font:15px/1.4 var(--font-body);overflow:hidden}
+body{background:var(--panel);color:var(--fg);font:400 16px/1.4 var(--font-body);overflow:hidden}
 #map{position:fixed;inset:0;z-index:0;background:var(--bg)}
-button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-color-scheme: dark){button:focus-visible,input:focus-visible{outline-color:var(--fg)}}
 
 .panel{position:fixed;z-index:500;left:0;right:0;bottom:0;background:var(--panel);
-  border-radius:18px 18px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.18);
-  padding:10px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
-  display:flex;flex-direction:column;gap:8px}
-@media (min-width:820px){.panel{left:16px;top:16px;bottom:auto;right:auto;width:380px;border-radius:16px;max-height:calc(100vh - 32px)}}
+  border-top:1.5px solid var(--line);
+  padding:16px max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));
+  display:flex;flex-direction:column;gap:14px}
+@media (min-width:820px){.panel{left:16px;top:16px;bottom:auto;right:auto;width:380px;border:1.5px solid var(--line);max-height:calc(100vh - 32px)}}
 
 .sign{flex:none;width:34px;height:34px;border-radius:50%;background:#fff;border:4px solid #d0021b;display:grid;place-items:center;
-  font:700 13px/1 var(--font-head);color:#111}
+  font:400 17px/1 var(--font-head);color:#111;letter-spacing:.02em}
 .toprow{display:flex;align-items:center;gap:8px}
-.fromline{font:500 14px var(--font-body);background:none;border:0;color:var(--accent);cursor:pointer;min-height:44px;padding:0 6px;text-align:left;
-  text-decoration:underline;text-underline-offset:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fromline{font:400 14px var(--font-body);letter-spacing:.1em;text-transform:uppercase;background:none;border:0;color:var(--fg);cursor:pointer;min-height:44px;padding:0 6px;text-align:left;
+  text-decoration:underline;text-underline-offset:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 
-#startView{display:flex;flex-direction:column;gap:8px}
+#startView{display:flex;flex-direction:column;gap:10px}
 #fromBlock{display:flex;flex-direction:column;gap:8px}
 .fields{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
 .field{position:relative}
-.field input{width:100%;font:inherit;font-size:16px;min-height:46px;padding:11px 12px 11px 36px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--fg)}
-.field input:focus{outline:2px solid var(--accent);outline-offset:-2px;border-color:var(--accent)}
-.field .mag{display:none;position:absolute;left:12px;top:50%;margin-top:-9px;color:var(--muted);pointer-events:none}
+.field input{width:100%;font:inherit;font-size:17px;min-height:48px;padding:11px 12px 11px 38px;border:1.5px solid var(--line);border-radius:0;background:var(--field);color:var(--fg)}
+.field input::placeholder{color:var(--muted);opacity:1}
+.field input:focus{outline:3px solid var(--accent);outline-offset:-1px}
+.field .mag{display:none;position:absolute;left:12px;top:50%;margin-top:-9px;color:var(--fg);pointer-events:none}
 .field.to .mag{left:14px}
 .panel.searching .field .dot{display:none}
 .panel.searching .field .mag{display:block}
-.ctx{margin:-2px 4px 0;color:var(--muted);font-size:14px}
-.hint{margin:24px 8px;text-align:center;color:var(--muted);font-size:15px}
+.ctx{margin:-2px 0 0;padding:4px;min-height:44px;text-align:left;align-self:flex-start;color:var(--muted);font-size:14px;letter-spacing:.04em;text-decoration:underline;text-underline-offset:3px}
+.hint{margin:24px 8px;text-align:center;color:var(--muted);font-size:15px;letter-spacing:.04em}
 .ghrow{display:flex;align-items:flex-end;justify-content:space-between}
-.ghrow .textbtn{font-size:14px}
-.field .dot{position:absolute;left:13px;top:17px;width:12px;height:12px;border-radius:50%;border:3px solid var(--accent)}
-.field.to .dot{border-radius:2px;background:var(--accent)}
-.field.to input{font-size:18px;font-weight:500;min-height:56px;padding-left:40px;border-radius:14px}
-.field.to .dot{left:15px;top:22px}
-.iconbtn{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:10px;width:44px;height:44px;cursor:pointer;display:grid;place-items:center;flex:none}
-.iconbtn.plain{border:0;background:none;color:var(--muted)}
-.textbtn{font:600 15px var(--font-body);background:none;border:0;color:var(--accent);cursor:pointer;min-height:44px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border-radius:8px}
+.ghrow .textbtn{font-size:13px}
+.field .dot{position:absolute;left:14px;top:18px;width:12px;height:12px;border-radius:50%;border:2.5px solid var(--fg)}
+.field.to .dot{border-radius:0;background:var(--fg)}
+.field.to input{font-family:var(--font-head);font-size:26px;letter-spacing:.04em;font-weight:400;min-height:56px;padding-left:42px;border-radius:0}
+.field.to input::placeholder{font-family:var(--font-body);font-size:17px;letter-spacing:0}
+.field.to .dot{left:17px;top:22px}
+.iconbtn{font:inherit;border:1.5px solid var(--line);background:transparent;color:var(--fg);border-radius:0;width:44px;height:44px;cursor:pointer;display:grid;place-items:center;flex:none}
+.iconbtn.plain{border:0;background:none;color:var(--fg)}
+.textbtn{font:400 13px var(--font-body);letter-spacing:.1em;text-transform:uppercase;background:none;border:0;color:var(--fg);cursor:pointer;min-height:44px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .textbtn:disabled{color:var(--muted);cursor:default}
 .textbtn svg{flex:none}
-.popbtn{font:500 15px var(--font-body);min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
-/* Grupperte lister (som iOS Innstillinger) */
-.group{background:var(--bg);border-radius:12px;overflow:hidden;flex-shrink:0}
-.group>*+*{border-top:1px solid var(--line)}
-.gh{font:600 13px var(--font-body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:6px 4px -4px}
-.gnote{margin:-4px 4px 0}
-.row{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;cursor:pointer;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;color:var(--fg);font:inherit}
+.popbtn{font:400 14px var(--font-body);letter-spacing:.1em;text-transform:uppercase;min-height:44px;padding:0 14px;border-radius:0;border:1.5px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+/* Lister: tynne streker, ingen bokser */
+.group{background:transparent;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;flex-shrink:0}
+.group>*+*{border-top:1px solid var(--rule)}
+.gh{font:300 15px var(--font-body);color:var(--fg);text-transform:uppercase;letter-spacing:.12em;margin:6px 0 6px}
+.gnote{margin:-4px 0 0}
+.row{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 2px;cursor:pointer;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;color:var(--fg);font:inherit}
 .rtxt{flex:1;min-width:0;display:block}
-.rtxt b{display:block;font:500 16px/1.25 var(--font-body)}
-.rtxt small{display:block;color:var(--muted);font-size:13px;line-height:1.3;margin-top:1px}
-.rowbtn{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:6px 14px;border:0;background:none;color:var(--fg);font:500 16px var(--font-body);text-align:left;cursor:pointer}
+.rtxt b{display:block;font:500 16px/1.25 var(--font-body);letter-spacing:.06em;text-transform:uppercase}
+.rtxt small{display:block;color:var(--muted);font-size:14px;line-height:1.3;margin-top:1px}
+.rowbtn{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:6px 2px;border:0;background:none;color:var(--fg);font:500 16px var(--font-body);letter-spacing:.06em;text-transform:uppercase;text-align:left;cursor:pointer}
 .rowbtn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rowbtn svg{flex:none}
-.rowbtn .st{color:var(--accent)}
-.rowbtn .ch{color:var(--muted)}
-.rowbtn:active,.sugg button:active{background:color-mix(in srgb,var(--accent) 12%,transparent)}
-.switch{appearance:none;-webkit-appearance:none;flex:none;width:51px;height:31px;border-radius:16px;background:color-mix(in srgb,var(--muted) 45%,var(--bg));position:relative;margin:0;cursor:pointer;transition:background .2s}
-.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);transition:transform .2s}
+.rowbtn .st{color:var(--fg)}
+.rowbtn .ch{color:var(--fg)}
+.rowbtn:active,.sugg button:active{background:var(--sel)}
+.switch{appearance:none;-webkit-appearance:none;flex:none;width:51px;height:31px;border-radius:0;border:1.5px solid var(--line);background:transparent;position:relative;margin:0;cursor:pointer;transition:background .2s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:0;background:var(--fg);transition:transform .2s}
 .switch:checked{background:var(--accent)}
-.switch:checked::after{transform:translateX(20px)}
+.switch:checked::after{transform:translateX(20px);background:var(--accent-fg)}
 .radio{appearance:none;-webkit-appearance:none;flex:none;width:24px;height:24px;margin:0;position:relative;cursor:pointer}
-.radio::after{content:"";position:absolute;left:8px;top:3px;width:7px;height:14px;border:solid var(--accent);border-width:0 3px 3px 0;transform:rotate(45deg);opacity:0}
+.radio::after{content:"";position:absolute;left:8px;top:3px;width:7px;height:14px;border:solid var(--fg);border-width:0 3px 3px 0;transform:rotate(45deg);opacity:0}
 .radio:checked::after{opacity:1}
 /* Søk: forslagene ligger alltid under feltet */
-.sugg{background:var(--bg);border-radius:12px;overflow:hidden}
-.sugg button{display:block;width:100%;text-align:left;font:inherit;min-height:48px;padding:10px 14px;border:0;background:none;color:var(--fg);cursor:pointer;border-top:1px solid var(--line)}
+.sugg{background:var(--field);border:1.5px solid var(--line);overflow:hidden}
+.sugg button{display:block;width:100%;text-align:left;font:inherit;font-size:17px;min-height:48px;padding:10px 14px;border:0;background:none;color:var(--fg);cursor:pointer;border-top:1px solid var(--rule)}
 .sugg button:first-child{border-top:0}
-.sugg button:hover,.sugg button:focus{background:color-mix(in srgb,var(--accent) 10%,transparent)}
-.sugg small{display:block;color:var(--muted);font-size:12px}
+.sugg button:hover,.sugg button:focus{background:var(--sel)}
+.sugg small{display:block;color:var(--muted);font-size:13px}
 .cancelbtn{display:none}
 .panel.searching .cancelbtn{display:inline-flex}
 .panel.searching .toprow,.panel.searching #install,.panel.searching .savefav{display:none}
@@ -105,94 +112,98 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .panel.focus-from .toRow,.panel.focus-from #swap{display:none}
 .panel.searching #startView{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:4px}
 @media (max-width:819.98px){
-  .panel.searching{top:0;bottom:0;height:auto;border-radius:0;box-shadow:none;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:0}
+  .panel.searching{top:0;bottom:0;height:auto;border-top:0;box-shadow:none;padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:0}
   .panel.searching #startView{padding-bottom:calc(var(--kb,0px) + 12px + env(safe-area-inset-bottom))}
 }
 #favs{display:flex;flex-direction:column;gap:6px}
 #favsList{max-height:28vh;overflow:auto}
 .panel.searching #favsList{max-height:none}
-.primary{font:600 17px var(--font-body);min-height:48px;padding:0 20px;border-radius:12px;border:0;background:var(--accent);color:var(--accent-fg);cursor:pointer}
+.primary{font:400 26px var(--font-head);letter-spacing:.12em;text-transform:uppercase;min-height:52px;padding:0 20px;border-radius:0;border:0;background:var(--btn);color:var(--btn-fg);cursor:pointer;box-shadow:var(--shadow)}
 .primary:disabled{opacity:.5;cursor:default}
-.secondary{font:500 15px var(--font-body);min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
-.linkbtn{font:500 13px var(--font-body);background:none;border:0;color:var(--accent);cursor:pointer;min-height:44px;padding:0 6px;text-decoration:underline}
-.muted{color:var(--muted);font-size:12.5px}
-.note{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:8px 10px;font-size:13px}
-.err{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:10px;font-size:14px}
-.info{background:var(--bg);color:var(--muted);border-radius:10px;padding:10px;font-size:14px}
+.secondary{font:400 14px var(--font-body);letter-spacing:.1em;text-transform:uppercase;min-height:48px;padding:0 14px;border-radius:0;border:1.5px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
+.linkbtn{font:400 13px var(--font-body);letter-spacing:.08em;text-transform:uppercase;background:none;border:0;color:var(--fg);cursor:pointer;min-height:44px;padding:0 6px;text-decoration:underline;text-underline-offset:3px}
+.muted{color:var(--muted);font-size:14px}
+.note{background:var(--warn-bg);color:var(--warn);border-left:4px solid var(--warn);padding:8px 10px;font-size:14px}
+.err{background:var(--warn-bg);color:var(--warn);border-left:4px solid var(--warn);padding:10px;font-size:15px}
+.info{background:var(--field);color:var(--muted);padding:10px;font-size:15px}
 
 /* Rutekort */
-#routeView{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;padding:2px;overscroll-behavior:contain}
+#routeView{display:flex;flex-direction:column;gap:14px;max-height:52vh;overflow:auto;padding:2px;overscroll-behavior:contain}
 .panel.steps-open #routeView{max-height:75vh}
 @media (min-width:820px){#routeView,.panel.steps-open #routeView{max-height:calc(100vh - 90px)}}
-.rhead{display:flex;align-items:center;gap:4px}
-.rhead .name{flex:1;min-width:0;font:600 17px var(--font-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rhead{display:flex;align-items:center;gap:12px}
+.rhead .name{flex:1;min-width:0;font:400 36px/1.1 var(--font-head);letter-spacing:.02em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rhead #closeRoute{margin-right:-8px}
-.startbtn{width:100%;min-height:52px;font-size:18px}
-.summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:left}
-.summary div{background:var(--bg);border-radius:10px;padding:6px 10px;min-width:0}
-.summary b{display:block;font:700 18px/1.15 var(--font-head);font-variant-numeric:tabular-nums;white-space:nowrap}
-.summary span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.altrow{display:grid;grid-template-columns:1fr auto auto 18px;gap:10px;align-items:center;width:100%;min-height:48px;padding:6px 12px;border:0;background:none;color:var(--fg);font:500 15px var(--font-body);text-align:left;cursor:pointer}
-.altrow[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:600;box-shadow:inset 4px 0 0 var(--accent)}
+.startbtn{width:100%;min-height:52px}
+.summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;text-align:left}
+.summary div{background:none;padding:0 8px 0 14px;min-width:0;border-left:1px solid var(--line)}
+.summary div:first-child{padding-left:0;border-left:0}
+.summary b{display:block;font:400 36px/1.15 var(--font-head);letter-spacing:.02em;text-transform:uppercase;font-variant-numeric:tabular-nums;white-space:nowrap}
+.summary span{font:300 14px var(--font-body);color:var(--fg);text-transform:uppercase;letter-spacing:.12em}
+.altrow{display:grid;grid-template-columns:1fr auto auto 20px;gap:10px;align-items:center;width:100%;min-height:48px;padding:6px 2px;border:0;background:none;color:var(--fg);font:500 16px var(--font-body);letter-spacing:.06em;text-transform:uppercase;text-align:left;cursor:pointer}
+.altrow[aria-pressed="true"]{background:var(--sel);box-shadow:inset 4px 0 0 var(--accent);padding-left:12px}
 .altrow .tm{font-variant-numeric:tabular-nums}
 .altrow .dl{color:var(--muted);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
-.altrow .ck{width:18px;height:18px;position:relative}
-.altrow[aria-pressed="true"] .ck::after{content:"";position:absolute;left:6px;top:1px;width:6px;height:12px;border:solid var(--accent);border-width:0 3px 3px 0;transform:rotate(45deg)}
+.altrow .ck{width:20px;height:20px;position:relative}
+.altrow[aria-pressed="true"] .ck::after{content:"";position:absolute;left:6px;top:2px;width:6px;height:12px;border:solid var(--fg);border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
 .arrive{display:flex;gap:4px 8px;align-items:center;flex-wrap:wrap}
-.arrivebtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;font-weight:600;line-height:1.25;text-align:left;border-color:var(--accent);color:var(--accent)}
+.arrivebtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;font-size:14px;line-height:1.25;box-shadow:var(--shadow)}
 .arrivebtn svg{flex:none}
 #arriveResult{flex:1;min-width:0}
-.arrive input[type="time"]{font:inherit;font-size:16px;min-height:44px;padding:0 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg)}
-.leave{font-size:14px}
+.arrive input[type="time"]{font:inherit;font-size:17px;min-height:44px;padding:0 10px;border:1.5px solid var(--line);border-radius:0;background:var(--field);color:var(--fg)}
+.leave{font-size:15px}
 #stepsToggle{width:100%;min-height:44px}
 ol.steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-ol.steps li{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer;min-height:44px}
-ol.steps li.next{background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:8px}
-ol.steps .arrow{flex:none;width:26px;text-align:center;font-size:18px;color:var(--accent)}
-ol.steps .d{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13px}
+ol.steps li{display:flex;gap:10px;padding:10px 2px;border-bottom:1px solid var(--rule);cursor:pointer;min-height:44px}
+ol.steps li.next{background:var(--sel);box-shadow:inset 4px 0 0 var(--accent);padding-left:10px}
+ol.steps .arrow{flex:none;width:26px;text-align:center;font-size:18px;color:var(--fg)}
+ol.steps .d{margin-left:auto;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14px}
 
-/* Kartknapper: ikon + tekst, minst 44 px */
-.fab{position:fixed;z-index:500;right:calc(14px + env(safe-area-inset-right));top:calc(14px + env(safe-area-inset-top));display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.fab button{min-height:44px;padding:0 14px;border-radius:22px;border:0;background:var(--panel);color:var(--fg);box-shadow:0 2px 10px rgba(0,0,0,.25);
-  font:500 14px var(--font-body);cursor:pointer;display:flex;align-items:center;gap:6px}
-.fab button span{font-size:18px;line-height:1}
+/* Kartknapper: svarte piller i en rad, minst 44 px */
+.fab{position:fixed;z-index:500;right:calc(16px + env(safe-area-inset-right));top:calc(14px + env(safe-area-inset-top));display:flex;flex-direction:row;align-items:flex-start;gap:8px}
+.fab button{min-height:44px;min-width:44px;padding:0 16px;border-radius:100px;border:0;background:var(--btn);color:var(--btn-fg);box-shadow:0 2px 10px rgba(0,0,0,.25);
+  font:400 12px var(--font-body);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.fab button svg{flex:none}
+.fab .lbl{display:inline}
+.fab #settingsBtn .lbl{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fab button:focus-visible{outline-color:var(--fg);outline-offset:3px}
 
 /* Kjøremodus: skjul panel og kartknapper, vis banner øverst og linje nederst */
 body.driving .panel,body.driving .fab{display:none}
 .leaflet-bottom{bottom:var(--bottom-ui,0px)}   /* holder © OpenStreetMap over panelet */
 .nav{position:fixed;z-index:600;left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));top:calc(12px + env(safe-area-inset-top));
-  background:var(--accent);color:var(--accent-fg);border-radius:16px;padding:12px 16px;display:flex;gap:16px;align-items:center;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+  background:var(--nav-bg);color:var(--nav-fg);border:1.5px solid var(--fg);padding:12px 16px;display:flex;gap:16px;align-items:center;box-shadow:var(--shadow)}
 .nav .big{flex:none;width:76px;text-align:center;font-size:68px;line-height:1}
 .nav .txt{min-width:0}
-.nav b{font:700 44px/1 var(--font-head);display:block;font-variant-numeric:tabular-nums}
-.nav span{display:block;font:600 22px/1.2 var(--font-body);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.drivebar{position:fixed;z-index:600;left:0;right:0;bottom:0;background:var(--panel);box-shadow:0 -4px 18px rgba(0,0,0,.25);border-radius:18px 18px 0 0;
-  padding:10px max(14px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px}
-.drivebar .info{flex:1 1 0;min-width:0;background:none;padding:0;border-radius:0}
-.drivebar .eta{display:flex;align-items:baseline;gap:6px;min-width:0;white-space:nowrap}
-.drivebar .eta .lbl{font:500 14px var(--font-body);color:var(--muted);flex:none}
-.drivebar .eta b{font:700 22px/1.15 var(--font-head);font-variant-numeric:tabular-nums;min-width:0}
+.nav b{font:400 56px/1 var(--font-head);letter-spacing:.03em;text-transform:uppercase;display:block;font-variant-numeric:tabular-nums}
+.nav span{display:block;font:400 22px/1.2 var(--font-body);letter-spacing:.04em;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drivebar{position:fixed;z-index:600;left:0;right:0;bottom:0;background:var(--panel);border-top:1.5px solid var(--line);
+  padding:10px max(16px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px}
+.drivebar .info{flex:1 1 0;min-width:0;background:none;padding:0}
+.drivebar .eta{display:flex;align-items:baseline;gap:8px;min-width:0;white-space:nowrap}
+.drivebar .eta .lbl{font:300 14px var(--font-body);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);flex:none}
+.drivebar .eta b{font:400 34px/1.1 var(--font-head);letter-spacing:.02em;font-variant-numeric:tabular-nums;min-width:0}
 .drivebar #dRest{display:block;font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.drivebar .iconbtn{width:52px;height:52px;border-radius:14px}
+.drivebar .iconbtn{width:52px;height:52px}
 .drivebar .iconbtn svg{width:26px;height:26px}
-.drivebar .endbtn{flex:none;min-height:52px;padding:0 18px;border-radius:14px;border:0;background:var(--danger);color:var(--danger-fg);font:700 17px var(--font-body);cursor:pointer}
-.recenter{position:fixed;z-index:600;left:50%;transform:translateX(-50%);bottom:calc(var(--bottom-ui,0px) + 36px);min-height:48px;padding:0 22px;border-radius:24px;
-  border:0;background:var(--accent);color:var(--accent-fg);font:600 17px var(--font-body);box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer}
+.drivebar .endbtn{flex:none;min-height:52px;padding:0 18px;border-radius:0;border:0;background:var(--danger);color:var(--danger-fg);font:400 24px var(--font-head);letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:var(--shadow)}
+.recenter{position:fixed;z-index:600;left:50%;transform:translateX(-50%);bottom:calc(var(--bottom-ui,0px) + 36px);min-height:48px;padding:0 22px;border-radius:100px;
+  border:0;background:var(--btn);color:var(--btn-fg);font:400 15px var(--font-body);letter-spacing:.1em;text-transform:uppercase;box-shadow:0 3px 12px rgba(0,0,0,.35);cursor:pointer}
 
 /* Favoritter */
 .toRow{display:grid;grid-template-columns:1fr auto;gap:4px;align-items:start}
 .destrow{display:flex;align-items:center;gap:8px}
-.destrow .name{flex:1;min-width:0;font:600 16px var(--font-head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.destrow .name{flex:1;min-width:0;font:400 24px var(--font-head);letter-spacing:.03em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .favrow{display:grid;grid-template-columns:1fr 48px;align-items:center}
-.favrow input{font:inherit;font-size:16px;min-height:48px;padding:0 14px;border:0;background:none;color:var(--fg);min-width:0;border-radius:0}
-.group .pad{margin:0;padding:12px 14px}
+.favrow input{font:inherit;font-size:17px;min-height:48px;padding:0 2px;border:0;background:none;color:var(--fg);min-width:0;border-radius:0}
+.group .pad{margin:0;padding:12px 2px}
 
 /* Innstillinger */
 .overlay{position:fixed;inset:0;z-index:700;background:var(--backdrop);display:flex;align-items:flex-end;justify-content:center}
-.sheet{width:100%;max-width:480px;background:var(--panel);border-radius:18px 18px 0 0;padding:16px max(16px,env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));
-  display:flex;flex-direction:column;gap:12px;max-height:85vh;overflow:auto}
-@media (min-width:820px){.overlay{align-items:center}.sheet{border-radius:16px}}
-.sheet h2{font:700 18px/1.2 var(--font-head);margin:0}
+.sheet{width:100%;max-width:480px;background:var(--panel);border-top:1.5px solid var(--line);padding:16px max(20px,env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));
+  display:flex;flex-direction:column;gap:14px;max-height:85vh;overflow:auto}
+@media (min-width:820px){.overlay{align-items:center}.sheet{border:1.5px solid var(--line)}}
+.sheet h2{font:400 36px/1.1 var(--font-head);letter-spacing:.03em;text-transform:uppercase;margin:0}
 
 .me{width:36px;height:36px;position:relative}
 .me .pt{position:absolute;left:9px;top:9px;width:18px;height:18px;border-radius:50%;background:#2a7bf6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(42,123,246,.25)}
@@ -208,8 +219,8 @@ body.driving .panel,body.driving .fab{display:none}
 <div id="map" aria-label="Kart"></div>
 
 <div class="fab">
-  <button id="locate" title="Min posisjon" aria-label="Min posisjon"><span aria-hidden="true">◎</span>Min posisjon</button>
-  <button id="settingsBtn" title="Innstillinger" aria-label="Innstillinger"><span aria-hidden="true">⚙︎</span>Innstillinger</button>
+  <button id="locate" title="Min posisjon" aria-label="Min posisjon"><span class="lbl">Min posisjon</span><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+  <button id="settingsBtn" title="Innstillinger" aria-label="Innstillinger"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg><span class="lbl">Innstillinger</span></button>
 </div>
 
 <!-- Kjøremodus -->
@@ -247,7 +258,7 @@ body.driving .panel,body.driving .fab{display:none}
       <button class="textbtn savefav" hidden>Lagre</button>
       <button class="textbtn cancelbtn" id="cancelTo">Avbryt</button>
     </div>
-    <div class="ctx" id="ctx" hidden></div>
+    <button type="button" class="ctx textbtn" id="ctx" hidden></button>
     <div class="sugg" id="suggTo" hidden></div>
     <div id="favs" hidden><h3 class="gh">Favoritter</h3><div class="group" id="favsList"></div></div>
     <div id="recent" hidden><div class="ghrow"><h3 class="gh">Siste søk</h3><button class="textbtn" id="recentClear">Tøm</button></div><div class="group" id="recentList"></div></div>
@@ -326,7 +337,7 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 map.on("moveend", () => { const c = map.getCenter(); store.set("view",[c.lat,c.lng]); store.set("zoom",map.getZoom()); });
 
 const pinIcon = (label, color) => L.divIcon({ className:"", iconSize:[28,28], iconAnchor:[14,14],
-  html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};color:#fff;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.4);display:grid;place-items:center;font:700 13px Inter,sans-serif">${label}</div>` });
+  html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};color:#fff;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.4);display:grid;place-items:center;font:400 16px 'Bebas Neue',Oswald,sans-serif">${label}</div>` });
 const meIcon = L.divIcon({ className:"", iconSize:[36,36], iconAnchor:[18,18], html:'<div class="me"><i class="hd"></i><i class="pt"></i></div>' });
 const STAR_ON = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
 const STAR_OFF = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
@@ -400,6 +411,7 @@ function updateFromLabel(){
   $("fromToggle").textContent = "Fra: " + (state.fromIsMe ? "Min posisjon" : (inputs.from.value.trim() || "velg sted"));
 }
 function openFrom(focus = true){
+  $("suggTo").hidden = true; // gamle treff fra målfeltet skal ikke bli liggende
   $("fromBlock").hidden = false; $("fromToggle").setAttribute("aria-expanded", "true");
   if (focus) inputs.from.focus();
 }
@@ -420,7 +432,7 @@ function setPoint(which, p, label){
   if (label !== undefined) inputs[which].value = label;
   if (markers[which]) map.removeLayer(markers[which]);
   markers[which] = null;
-  if (p) markers[which] = L.marker([p.lat,p.lon], { icon: pinIcon(which==="from"?"A":"B", which==="from"?"#0f7a63":"#d0021b") }).addTo(map);
+  if (p) markers[which] = L.marker([p.lat,p.lon], { icon: pinIcon(which==="from"?"A":"B", which==="from"?"#1d4a2c":"#c0112a") }).addTo(map);
   if (which === "from") updateFromLabel(); else renderFavs();
 }
 // Rut automatisk når vi har både start og mål
@@ -448,12 +460,15 @@ function syncVV(){
 if (window.visualViewport){ visualViewport.addEventListener("resize", syncVV); visualViewport.addEventListener("scroll", syncVV); syncVV(); }
 function enterSearch(which){
   searchWhich = which; syncVV();
+  // Skjul treff fra det andre feltet, så gamle forslag ikke blir liggende
+  $(which === "from" ? "suggTo" : "suggFrom").hidden = true;
   panel.classList.remove("focus-from", "focus-to");
   panel.classList.add("searching", "focus-" + which);
   updateCtx(); syncFavs();
 }
 function exitSearch(){
   searchWhich = null;
+  $("suggFrom").hidden = true; $("suggTo").hidden = true;
   panel.classList.remove("searching", "focus-from", "focus-to");
   updateCtx(); syncFavs();
 }
@@ -462,6 +477,7 @@ function updateCtx(){
   c.hidden = !on;
   if (on) c.textContent = "Fra: " + (state.fromIsMe ? "Min posisjon" : (inputs.from.value.trim() || "velg sted"));
 }
+$("ctx").onclick = () => { openFrom(false); enterSearch("from"); setTimeout(() => inputs.from.focus(), 0); };
 // Velg et sted (forslag, favoritt eller siste søk)
 function pickPlace(which, p, name, sub){
   setPoint(which, { lat:p.lat, lon:p.lon }, name);
@@ -791,7 +807,7 @@ function renderCarLine(){
   el.hidden = false;
 }
 
-function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#0f7a63"; }
+function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#21a878"; }
 function clearRouteLayers(){ state.layers.forEach(l => map.removeLayer(l)); state.layers = []; }
 
 function draw(fit = true){
