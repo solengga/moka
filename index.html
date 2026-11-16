@@ -62,7 +62,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 .field.to .mag{left:14px}
 .panel.searching .field .dot{display:none}
 .panel.searching .field .mag{display:block}
-.ctx{margin:-2px 4px 0;color:var(--muted);font-size:14px;letter-spacing:.04em}
+.ctx{margin:-2px 0 0;padding:4px;min-height:44px;text-align:left;align-self:flex-start;color:var(--muted);font-size:14px;letter-spacing:.04em;text-decoration:underline;text-underline-offset:3px}
 .hint{margin:24px 8px;text-align:center;color:var(--muted);font-size:15px;letter-spacing:.04em}
 .ghrow{display:flex;align-items:flex-end;justify-content:space-between}
 .ghrow .textbtn{font-size:13px}
@@ -80,7 +80,7 @@ button:focus-visible,input:focus-visible,a:focus-visible,[role="button"]:focus-v
 /* Lister: tynne streker, ingen bokser */
 .group{background:transparent;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;flex-shrink:0}
 .group>*+*{border-top:1px solid var(--rule)}
-.gh{font:300 15px var(--font-body);color:var(--fg);text-transform:uppercase;letter-spacing:.12em;margin:6px 0 -6px}
+.gh{font:300 15px var(--font-body);color:var(--fg);text-transform:uppercase;letter-spacing:.12em;margin:6px 0 6px}
 .gnote{margin:-4px 0 0}
 .row{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 2px;cursor:pointer;width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;color:var(--fg);font:inherit}
 .rtxt{flex:1;min-width:0;display:block}
@@ -258,7 +258,7 @@ body.driving .panel,body.driving .fab{display:none}
       <button class="textbtn savefav" hidden>Lagre</button>
       <button class="textbtn cancelbtn" id="cancelTo">Avbryt</button>
     </div>
-    <div class="ctx" id="ctx" hidden></div>
+    <button type="button" class="ctx textbtn" id="ctx" hidden></button>
     <div class="sugg" id="suggTo" hidden></div>
     <div id="favs" hidden><h3 class="gh">Favoritter</h3><div class="group" id="favsList"></div></div>
     <div id="recent" hidden><div class="ghrow"><h3 class="gh">Siste søk</h3><button class="textbtn" id="recentClear">Tøm</button></div><div class="group" id="recentList"></div></div>
@@ -411,6 +411,7 @@ function updateFromLabel(){
   $("fromToggle").textContent = "Fra: " + (state.fromIsMe ? "Min posisjon" : (inputs.from.value.trim() || "velg sted"));
 }
 function openFrom(focus = true){
+  $("suggTo").hidden = true; // gamle treff fra målfeltet skal ikke bli liggende
   $("fromBlock").hidden = false; $("fromToggle").setAttribute("aria-expanded", "true");
   if (focus) inputs.from.focus();
 }
@@ -459,12 +460,15 @@ function syncVV(){
 if (window.visualViewport){ visualViewport.addEventListener("resize", syncVV); visualViewport.addEventListener("scroll", syncVV); syncVV(); }
 function enterSearch(which){
   searchWhich = which; syncVV();
+  // Skjul treff fra det andre feltet, så gamle forslag ikke blir liggende
+  $(which === "from" ? "suggTo" : "suggFrom").hidden = true;
   panel.classList.remove("focus-from", "focus-to");
   panel.classList.add("searching", "focus-" + which);
   updateCtx(); syncFavs();
 }
 function exitSearch(){
   searchWhich = null;
+  $("suggFrom").hidden = true; $("suggTo").hidden = true;
   panel.classList.remove("searching", "focus-from", "focus-to");
   updateCtx(); syncFavs();
 }
@@ -473,6 +477,7 @@ function updateCtx(){
   c.hidden = !on;
   if (on) c.textContent = "Fra: " + (state.fromIsMe ? "Min posisjon" : (inputs.from.value.trim() || "velg sted"));
 }
+$("ctx").onclick = () => { openFrom(false); enterSearch("from"); setTimeout(() => inputs.from.focus(), 0); };
 // Velg et sted (forslag, favoritt eller siste søk)
 function pickPlace(which, p, name, sub){
   setPoint(which, { lat:p.lat, lon:p.lon }, name);
